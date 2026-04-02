@@ -222,13 +222,13 @@
   }
   .step-num {
     font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     color: var(--step-color, var(--muted));
     opacity: 0.7;
     flex-shrink: 0;
   }
   .step-name {
-    font-size: 0.62rem;
+    font-size: 0.74rem;
     font-weight: 500;
     color: var(--text);
     line-height: 1.3;
@@ -250,9 +250,9 @@
   .project-pill {
     background: rgba(255,255,255,0.04);
     border-left: 2px solid var(--step-color, var(--muted));
-    padding: 4px 7px;
+    padding: 5px 8px;
     border-radius: 0 4px 4px 0;
-    font-size: 0.65rem;
+    font-size: 0.78rem;
     font-family: 'DM Sans', sans-serif;
     color: var(--text);
     opacity: 0.9;
@@ -352,10 +352,10 @@ const REFRESH_MS      = 120_000; // 2 minutes
 const STEPS = [
   'Home Consultation',
   'Creative Review',
-  'Pre-Budget Meeting',
+  'Pre-Budget Appointment',
   'Budget Appointment',
   'Internal Ideas Session',
-  'On Site Visit',
+  'On-Site-Visit',
   'Appliance Meeting',
   'Concept Development',
   'Concept Client Meeting',
@@ -369,8 +369,33 @@ const STEPS = [
   'Internal Team Handoff & Revisions (3)',
   'Client Design Presentation',
   'Revisions (4)',
-  'Preclosing Internal Meeting',
+  'Pre-Closing Internal Meeting',
   'Closing Client Meeting',
+];
+
+// Exact values as stored in Asana's PHASE_ custom field (index matches STEPS)
+const ASANA_PHASE_VALUES = [
+  '# 1 Home Consultation',
+  '# 2 Creative Review',
+  '# 3 Pre-Budget Appointment',
+  '# 4 Budget Appointment',
+  '# 5 Internal Ideas Session',
+  '# 6 On-Site-Visit',
+  '# 7 Appliance Meeting',
+  '# 8 Concept Development',
+  '# 9 Concept Client Meeting',
+  '# 10 Revisions (1)',
+  '# 11 Design Development',
+  '# 12 Cabinetry Meeting',
+  '# 13 Material Client Meeting',
+  '# 14 Revisions (2)',
+  '# 15 Blue Tape',
+  '# 16 Create Detailed Design Package',
+  '# 17 Internal Team Handoff & Revisions (3)',
+  '# 18 Client Design Presentation',
+  '# 19 Revisions (4)',
+  '# 20 Pre-Closing Internal Meeting',
+  '# 21 Closing Client Meeting',
 ];
 
 // Step colours — cool blue → warm amber → green finish
@@ -421,14 +446,35 @@ const showError = (msg) => {
 const normalise = s => s?.toLowerCase().replace(/[^a-z0-9]/g,'') ?? '';
 
 const matchStep = (phaseValue) => {
-  const nv = normalise(phaseValue);
+  if (!phaseValue) return -1;
+  const trimmed = phaseValue.trim();
+
+  // 1. Exact match against known Asana phase values (fastest, most reliable)
+  const exact = ASANA_PHASE_VALUES.findIndex(v => v === trimmed);
+  if (exact >= 0) return exact;
+
+  // 2. Case-insensitive exact match
+  const exactCI = ASANA_PHASE_VALUES.findIndex(v => v.toLowerCase() === trimmed.toLowerCase());
+  if (exactCI >= 0) return exactCI;
+
+  // 3. Strip the "# N " prefix and match against step names
+  const stripped = trimmed.replace(/^#\s*\d+\s*/, '').trim();
+  const normStripped = normalise(stripped);
+  for (let i = 0; i < STEPS.length; i++) {
+    if (normalise(STEPS[i]) === normStripped) return i;
+  }
+
+  // 4. Normalised full-value match against step names
+  const nv = normalise(trimmed);
   for (let i = 0; i < STEPS.length; i++) {
     if (normalise(STEPS[i]) === nv) return i;
   }
-  // Try numeric prefix e.g. "3 - Pre-Budget Meeting"
-  const num = parseInt(phaseValue);
+
+  // 5. Numeric prefix fallback e.g. "4" or "04"
+  const num = parseInt(trimmed);
   if (!isNaN(num) && num >= 1 && num <= 21) return num - 1;
-  return -1; // unmatched
+
+  return -1; // unmatched — will log to console
 };
 
 // ── BUILD GRID ─────────────────────────────────────────────────────────────
