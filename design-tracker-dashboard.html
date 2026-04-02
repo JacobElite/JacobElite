@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Project Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #12161c;
+    --surface2: #1a2030;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8eaf0;
+    --muted: #5a6480;
+    --accent: #4f9cf9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── SETUP SCREEN ── */
+  #setup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 0;
+    background: radial-gradient(ellipse at 50% 0%, #1a2a4a 0%, var(--bg) 70%);
+  }
+  #setup h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    letter-spacing: 0.12em;
+    color: white;
+    margin-bottom: 6px;
+  }
+  #setup p.sub {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin-bottom: 48px;
+    letter-spacing: 0.04em;
+  }
+  .setup-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 48px;
+    width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .setup-card label {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .setup-card input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .setup-card input:focus { border-color: var(--accent); }
+  .setup-card input::placeholder { color: var(--muted); }
+  .btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 13px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn:hover { opacity: 0.88; }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  #setup-error {
+    color: #f87272;
+    font-size: 0.83rem;
+    text-align: center;
+    min-height: 18px;
+  }
+  .help-link {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 4px;
+  }
+  .help-link a { color: var(--accent); text-decoration: none; }
+
+  /* ── LOADING SCREEN ── */
+  #loading {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 20px;
+  }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading p { color: var(--muted); font-size: 0.9rem; letter-spacing: 0.06em; }
+
+  /* ── DASHBOARD ── */
+  #dashboard {
+    display: none;
+    flex-direction: column;
+    height: 100vh;
+    padding: 0;
+  }
+
+  .dash-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    background: var(--surface);
+  }
+  .dash-header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.7rem;
+    letter-spacing: 0.12em;
+    color: white;
+  }
+  .dash-meta {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .live-dot {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px #4ade80;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  #last-updated {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  #project-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--accent);
+    background: rgba(79,156,249,0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 1px;
+    flex: 1;
+    overflow: hidden;
+    background: var(--border);
+  }
+
+  .step-card {
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: background 0.2s;
+    position: relative;
+  }
+  .step-card.has-projects {
+    background: var(--surface2);
+  }
+
+  .step-header {
+    padding: 8px 10px 6px;
+    border-bottom: 2px solid var(--step-color, var(--border));
+    flex-shrink: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+  }
+  .step-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--step-color, var(--muted));
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+  .step-name {
+    font-size: 0.62rem;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+
+  .step-projects {
+    flex: 1;
+    overflow-y: auto;
+    padding: 5px 10px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    scrollbar-width: none;
+  }
+  .step-projects::-webkit-scrollbar { display: none; }
+
+  .project-pill {
+    background: rgba(255,255,255,0.04);
+    border-left: 2px solid var(--step-color, var(--muted));
+    padding: 4px 7px;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.65rem;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    opacity: 0.9;
+    line-height: 1.3;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 0.9; } }
+
+  .empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--muted);
+    font-size: 0.6rem;
+    opacity: 0.4;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── Refresh bar ── */
+  #refresh-bar {
+    position: fixed;
+    bottom: 0; left: 0;
+    height: 2px;
+    background: var(--accent);
+    width: 100%;
+    transform-origin: left;
+    animation: shrink linear forwards;
+  }
+  @keyframes shrink {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+  }
+
+  /* ── Error toast ── */
+  #error-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2a1515;
+    border: 1px solid #f87272;
+    color: #f87272;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── SETUP ── -->
+<div id="setup">
+  <h1>Design Project Tracker</h1>
+  <p class="sub">Connect your Asana workspace to get started</p>
+  <div class="setup-card">
+    <label>Asana Personal Access Token</label>
+    <input type="password" id="token-input" placeholder="1/xxxxxxxxxxxxxxxx..." />
+    <p class="help-link">
+      Get your token at <a href="https://app.asana.com/0/my-apps" target="_blank">app.asana.com/0/my-apps</a> → Personal Access Tokens
+    </p>
+    <div id="setup-error"></div>
+    <button class="btn" id="connect-btn" onclick="connect()">Connect to Asana</button>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p id="loading-msg">Connecting to Asana...</p>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="dashboard">
+  <div class="dash-header">
+    <h1>Design Project Tracker — 2026</h1>
+    <div class="dash-meta">
+      <div class="live-dot"><span class="dot"></span> Live</div>
+      <span id="project-count">— active projects</span>
+      <span id="last-updated">—</span>
+    </div>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<div id="refresh-bar" style="display:none"></div>
+<div id="error-toast" id="error-toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+const PORTFOLIO_NAME  = 'DESIGN PROJECT TRACKER 2026';
+const PHASE_FIELD     = 'PHASE_';
+const REFRESH_MS      = 120_000; // 2 minutes
+
+const STEPS = [
+  'Home Consultation',
+  'Creative Review',
+  'Pre-Budget Meeting',
+  'Budget Appointment',
+  'Internal Ideas Session',
+  'On Site Visit',
+  'Appliance Meeting',
+  'Concept Development',
+  'Concept Client Meeting',
+  'Revisions (1)',
+  'Design Development',
+  'Cabinetry Meeting',
+  'Material Client Meeting',
+  'Revisions (2)',
+  'Blue Tape',
+  'Create Detailed Design Package',
+  'Internal Team Handoff & Revisions (3)',
+  'Client Design Presentation',
+  'Revisions (4)',
+  'Preclosing Internal Meeting',
+  'Closing Client Meeting',
+];
+
+// Step colours — cool blue → warm amber → green finish
+const STEP_COLORS = [
+  '#4f9cf9','#5ba3f9','#58a6ff','#63b3ed','#7ec8e3',
+  '#81d4c8','#80cba8','#f6c453','#f5a623','#f49b0a',
+  '#e87e25','#e86c25','#e85a47','#e85470','#c857e8',
+  '#a55cee','#7c6fea','#5b82e5','#4f9cf9','#4ade80',
+  '#22c55e',
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let apiToken       = '';
+let portfolioGid   = '';
+let refreshTimer   = null;
+let countdownTimer = null;
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+const api = async (path) => {
+  const r = await fetch(`https://app.asana.com/api/1.0${path}`, {
+    headers: { Authorization: `Bearer ${apiToken}`, Accept: 'application/json' }
+  });
+  if (!r.ok) throw new Error(`Asana API error ${r.status}: ${r.statusText}`);
+  return (await r.json()).data;
+};
+
+const setLoading = (msg) => {
+  document.getElementById('setup').style.display     = 'none';
+  document.getElementById('loading').style.display   = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loading-msg').textContent = msg;
+};
+
+const showDashboard = () => {
+  document.getElementById('setup').style.display     = 'none';
+  document.getElementById('loading').style.display   = 'none';
+  document.getElementById('dashboard').style.display = 'flex';
+};
+
+const showError = (msg) => {
+  const t = document.getElementById('error-toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 5000);
+};
+
+// Fuzzy-ish match: strip punctuation/case and see if phase value maps to a step
+const normalise = s => s?.toLowerCase().replace(/[^a-z0-9]/g,'') ?? '';
+
+const matchStep = (phaseValue) => {
+  const nv = normalise(phaseValue);
+  for (let i = 0; i < STEPS.length; i++) {
+    if (normalise(STEPS[i]) === nv) return i;
+  }
+  // Try numeric prefix e.g. "3 - Pre-Budget Meeting"
+  const num = parseInt(phaseValue);
+  if (!isNaN(num) && num >= 1 && num <= 21) return num - 1;
+  return -1; // unmatched
+};
+
+// ── BUILD GRID ─────────────────────────────────────────────────────────────
+const buildGrid = () => {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  STEPS.forEach((name, i) => {
+    const color = STEP_COLORS[i];
+    const card = document.createElement('div');
+    card.className = 'step-card';
+    card.id = `step-${i}`;
+    card.style.setProperty('--step-color', color);
+    card.innerHTML = `
+      <div class="step-header">
+        <span class="step-num">${String(i+1).padStart(2,'0')}</span>
+        <span class="step-name">${name}</span>
+      </div>
+      <div class="step-projects" id="projects-${i}">
+        <div class="empty-state">—</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+};
+
+// ── FETCH & RENDER ─────────────────────────────────────────────────────────
+const fetchAndRender = async () => {
+  try {
+    // Paginate through portfolio items
+    let allProjects = [];
+    let offset = undefined;
+    const fields = 'name,custom_fields,custom_fields.name,custom_fields.display_value,custom_fields.enum_value,custom_fields.text_value,custom_fields.gid,archived';
+    do {
+      const url = `/portfolios/${portfolioGid}/items?opt_fields=${fields}&limit=100` + (offset ? `&offset=${offset}` : '');
+      const resp = await fetch(`https://app.asana.com/api/1.0${url}`, {
+        headers: { Authorization: `Bearer ${apiToken}`, Accept: 'application/json' }
+      });
+      const json = await resp.json();
+      allProjects = allProjects.concat(json.data);
+      offset = json.next_page?.offset;
+    } while (offset);
+
+    // Filter out archived
+    const projects = allProjects.filter(p => !p.archived);
+
+    // Group by step
+    const buckets = Array.from({ length: STEPS.length }, () => []);
+    const unmatched = [];
+
+    projects.forEach(p => {
+      const phaseField = p.custom_fields?.find(cf =>
+        cf.name?.toUpperCase().replace(/\s/g,'_') === PHASE_FIELD ||
+        cf.name?.toUpperCase() === PHASE_FIELD
+      );
+      const value = phaseField?.display_value || phaseField?.enum_value?.name || phaseField?.text_value || null;
+      const idx = value ? matchStep(value) : -1;
+      if (idx >= 0) buckets[idx].push(p.name);
+      else if (value) unmatched.push({ name: p.name, phase: value });
+    });
+
+    // Render each step card
+    STEPS.forEach((_, i) => {
+      const col    = document.getElementById(`projects-${i}`);
+      const card   = document.getElementById(`step-${i}`);
+      col.innerHTML = '';
+      if (buckets[i].length === 0) {
+        col.innerHTML = '<div class="empty-state">—</div>';
+        card.classList.remove('has-projects');
+      } else {
+        card.classList.add('has-projects');
+        buckets[i].forEach(name => {
+          const pill = document.createElement('div');
+          pill.className = 'project-pill';
+          pill.textContent = name;
+          col.appendChild(pill);
+        });
+      }
+    });
+
+    // Update header
+    const total = projects.length;
+    document.getElementById('project-count').textContent = `${total} active project${total !== 1 ? 's' : ''}`;
+    document.getElementById('last-updated').textContent =
+      'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (unmatched.length) {
+      console.warn('Unmatched phases (check PHASE_ field values):', unmatched);
+    }
+  } catch (err) {
+    console.error(err);
+    showError('Failed to refresh data — will retry soon');
+  }
+};
+
+// ── COUNTDOWN BAR ─────────────────────────────────────────────────────────
+const startCountdown = () => {
+  const bar = document.getElementById('refresh-bar');
+  bar.style.display = 'block';
+  bar.style.animation = 'none';
+  bar.offsetHeight; // reflow
+  bar.style.animation = `shrink ${REFRESH_MS / 1000}s linear forwards`;
+};
+
+// ── CONNECT ────────────────────────────────────────────────────────────────
+const connect = async () => {
+  const token = document.getElementById('token-input').value.trim();
+  if (!token) return;
+  apiToken = token;
+  localStorage.setItem('asana_token', token);
+
+  const btn = document.getElementById('connect-btn');
+  btn.disabled = true;
+  document.getElementById('setup-error').textContent = '';
+
+  try {
+    setLoading('Authenticating...');
+    const me = await api('/users/me?opt_fields=workspaces,workspaces.gid');
+
+    setLoading('Finding portfolio...');
+    let found = null;
+    for (const ws of me.workspaces) {
+      let offset;
+      do {
+        const url = `/portfolios?workspace=${ws.gid}&owner=me&limit=100` + (offset ? `&offset=${offset}` : '');
+        const r = await fetch(`https://app.asana.com/api/1.0${url}`, {
+          headers: { Authorization: `Bearer ${apiToken}`, Accept: 'application/json' }
+        });
+        const json = await r.json();
+        found = json.data.find(p => p.name === PORTFOLIO_NAME);
+        if (found) break;
+        offset = json.next_page?.offset;
+      } while (offset);
+      if (found) break;
+    }
+
+    if (!found) {
+      throw new Error(`Portfolio "${PORTFOLIO_NAME}" not found. Check the name matches exactly.`);
+    }
+
+    portfolioGid = found.gid;
+    localStorage.setItem('asana_portfolio_gid', portfolioGid);
+
+    setLoading('Loading projects...');
+    buildGrid();
+    await fetchAndRender();
+    showDashboard();
+
+    // Auto-refresh loop
+    clearInterval(refreshTimer);
+    refreshTimer = setInterval(async () => {
+      await fetchAndRender();
+      startCountdown();
+    }, REFRESH_MS);
+    startCountdown();
+
+  } catch (err) {
+    document.getElementById('setup').style.display     = 'flex';
+    document.getElementById('loading').style.display   = 'none';
+    document.getElementById('setup-error').textContent = err.message;
+    btn.disabled = false;
+  }
+};
+
+// ── AUTO-LOGIN ─────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('asana_token');
+  if (saved) {
+    document.getElementById('token-input').value = saved;
+    connect();
+  }
+
+  // Allow Enter key in token field
+  document.getElementById('token-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') connect();
+  });
+});
+</script>
+</body>
+</html>
