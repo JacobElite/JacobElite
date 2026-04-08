@@ -345,7 +345,7 @@
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────────────────
-const PORTFOLIO_NAME  = 'DESIGN PROJECT TRACKER 2026';
+const PORTFOLIO_GID   = '1213865621316992';
 const PHASE_FIELD     = 'PHASE_';
 const REFRESH_MS      = 120_000; // 2 minutes
 
@@ -590,30 +590,9 @@ const connect = async () => {
 
   try {
     setLoading('Authenticating...');
-    const me = await api('/users/me?opt_fields=workspaces,workspaces.gid');
+    await api('/users/me?opt_fields=gid'); // just verify the token is valid
 
-    setLoading('Finding portfolio...');
-    let found = null;
-    for (const ws of me.workspaces) {
-      let offset;
-      do {
-        const url = `/portfolios?workspace=${ws.gid}&owner=me&limit=100` + (offset ? `&offset=${offset}` : '');
-        const r = await fetch(`https://app.asana.com/api/1.0${url}`, {
-          headers: { Authorization: `Bearer ${apiToken}`, Accept: 'application/json' }
-        });
-        const json = await r.json();
-        found = json.data.find(p => p.name === PORTFOLIO_NAME);
-        if (found) break;
-        offset = json.next_page?.offset;
-      } while (offset);
-      if (found) break;
-    }
-
-    if (!found) {
-      throw new Error(`Portfolio "${PORTFOLIO_NAME}" not found. Check the name matches exactly.`);
-    }
-
-    portfolioGid = found.gid;
+    portfolioGid = PORTFOLIO_GID;
     localStorage.setItem('asana_portfolio_gid', portfolioGid);
 
     setLoading('Loading projects...');
