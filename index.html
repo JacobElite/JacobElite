@@ -577,6 +577,75 @@ const startCountdown = () => {
   bar.style.animation = `shrink ${REFRESH_MS / 1000}s linear forwards`;
 };
 
+
+// ── AUTO-SCROLL overflowing step columns ──────────────────────────────────
+const scrollStates = new Map(); // col el -> { direction, pausing, rafId }
+
+const SCROLL_SPEED  = 0.4;   // px per animation frame (~24px/sec at 60fps)
+const PAUSE_MS      = 2000;  // ms to pause at top and bottom
+
+const animateScroll = (el) => {
+  const state = scrollStates.get(el);
+  if (!state) return;
+
+  const maxScroll = el.scrollHeight - el.clientHeight;
+
+  // Not overflowing — nothing to do
+  if (maxScroll <= 2) {
+    scrollStates.delete(el);
+    return;
+  }
+
+  if (state.pausing) {
+    state.rafId = requestAnimationFrame(() => animateScroll(el));
+    return;
+  }
+
+  if (state.direction === 'down') {
+    el.scrollTop = Math.min(el.scrollTop + SCROLL_SPEED, maxScroll);
+    if (el.scrollTop >= maxScroll - 1) {
+      state.pausing = true;
+      setTimeout(() => {
+        state.pausing = false;
+        state.direction = 'up';
+      }, PAUSE_MS);
+    }
+  } else {
+    el.scrollTop = Math.max(el.scrollTop - SCROLL_SPEED, 0);
+    if (el.scrollTop <= 1) {
+      state.pausing = true;
+      setTimeout(() => {
+        state.pausing = false;
+        state.direction = 'down';
+      }, PAUSE_MS);
+    }
+  }
+
+  state.rafId = requestAnimationFrame(() => animateScroll(el));
+};
+
+const initScrollers = () => {
+  // Cancel any existing animations
+  scrollStates.forEach(state => cancelAnimationFrame(state.rafId));
+  scrollStates.clear();
+
+  STEPS.forEach((_, i) => {
+    const el = document.getElementById(`projects-${i}`);
+    if (!el) return;
+    const overflows = el.scrollHeight > el.clientHeight + 4;
+    if (overflows) {
+      el.scrollTop = 0;
+      const state = { direction: 'down', pausing: true, rafId: null };
+      scrollStates.set(el, state);
+      // Stagger start so all columns don't scroll in sync
+      setTimeout(() => {
+        state.pausing = false;
+        animateScroll(el);
+      }, PAUSE_MS + i * 300);
+    }
+  });
+};
+
 // ── CONNECT ────────────────────────────────────────────────────────────────
 const connect = async () => {
   const token = document.getElementById('token-input').value.trim();
@@ -605,8 +674,10 @@ const connect = async () => {
     refreshTimer = setInterval(async () => {
       await fetchAndRender();
       startCountdown();
+      initScrollers();
     }, REFRESH_MS);
     startCountdown();
+    initScrollers();
 
   } catch (err) {
     document.getElementById('setup').style.display     = 'flex';
