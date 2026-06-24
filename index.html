@@ -222,13 +222,13 @@
   }
   .step-num {
     font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
+    font-size: 0.82rem;
     color: var(--step-color, var(--muted));
     opacity: 0.7;
     flex-shrink: 0;
   }
   .step-name {
-    font-size: 0.74rem;
+    font-size: 0.88rem;
     font-weight: 500;
     color: var(--text);
     line-height: 1.3;
@@ -239,7 +239,7 @@
 
   .step-count {
     font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 500;
     color: var(--step-color, var(--muted));
     background: rgba(255,255,255,0.07);
@@ -267,7 +267,7 @@
     border-left: 2px solid var(--step-color, var(--muted));
     padding: 5px 8px;
     border-radius: 0 4px 4px 0;
-    font-size: 0.78rem;
+    font-size: 0.88rem;
     font-family: 'DM Sans', sans-serif;
     color: var(--text);
     opacity: 0.9;
@@ -275,6 +275,21 @@
     animation: fadeIn 0.3s ease;
   }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 0.9; } }
+
+
+  /* ── COMBINED CELL ── */
+  .step-sub {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .step-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    flex-shrink: 0;
+  }
 
   .empty-state {
     display: flex;
@@ -371,17 +386,18 @@ const STEPS = [
   'Budget Appointment',
   'Internal Ideas Session',
   'On-Site Visit',
-  'Appliance Meeting',
+  'Appliance Client Meeting',
   'Concept Development',
   'Concept Client Meeting',
   'Design Development',
-  'Cabinetry Meeting',
+  'Cabinetry Client Meeting',
   'Material Client Meeting',
   'Blue Tape',
   'Create Detailed Design Package',
   'Internal Team Handoff',
   'Client Design Presentation',
   'Pre-Closing Internal Meeting',
+  'Pre-Closing Client Meeting',
   'Closing Client Meeting',
 ];
 
@@ -393,27 +409,50 @@ const ASANA_PHASE_VALUES = [
   '# 4 Budget Appointment',
   '# 5 Internal Ideas Session',
   '# 6 On-Site Visit',
-  '# 7 Appliance Meeting',
+  '# 7 Appliance Client Meeting',
   '# 8 Concept Development',
   '# 9 Concept Client Meeting',
   '# 10 Design Development',
-  '# 11 Cabinetry Meeting',
+  '# 11 Cabinetry Client Meeting',
   '# 12 Material Client Meeting',
   '# 13 Blue Tape',
   '# 14 Create Detailed Design Package',
   '# 15 Internal Team Handoff',
   '# 16 Client Design Presentation',
   '# 17 Pre-Closing Internal Meeting',
-  '# 18 Closing Client Meeting',
+  '# 18 Pre-Closing Client Meeting',
+  '# 19 Closing Client Meeting',
 ];
 
-// Step colours — cool blue → warm amber → green finish
+// Step colours — cool blue → warm amber → green finish (19 steps)
 const STEP_COLORS = [
   '#4f9cf9','#5ba3f9','#58a6ff','#63b3ed','#7ec8e3',
-  '#81d4c8','#80cba8','#f6c453','#f5a623','#f49b0a',
-  '#e87e25','#e86c25','#e85a47','#e85470','#c857e8',
-  '#a55cee','#7c6fea','#5b82e5','#4f9cf9','#4ade80',
-  '#22c55e',
+  '#81d4c8','#6ecfbe','#f6c453','#f5a623','#f49b0a',
+  '#e87e25','#e86c25','#e85a47','#c857e8','#a55cee',
+  '#7c6fea','#5b82e5','#38c4e0','#4ade80',
+];
+
+// Display cell layout — 18 cells for the 6×3 grid.
+// Steps 6+7 (indices 5 & 6) share one combined cell.
+const DISPLAY_CELLS = [
+  {type:'single', idx:0},
+  {type:'single', idx:1},
+  {type:'single', idx:2},
+  {type:'single', idx:3},
+  {type:'single', idx:4},
+  {type:'combined', idxA:5, idxB:6},
+  {type:'single', idx:7},
+  {type:'single', idx:8},
+  {type:'single', idx:9},
+  {type:'single', idx:10},
+  {type:'single', idx:11},
+  {type:'single', idx:12},
+  {type:'single', idx:13},
+  {type:'single', idx:14},
+  {type:'single', idx:15},
+  {type:'single', idx:16},
+  {type:'single', idx:17},
+  {type:'single', idx:18},
 ];
 
 // ── STATE ──────────────────────────────────────────────────────────────────
@@ -481,31 +520,55 @@ const matchStep = (phaseValue) => {
 
   // 5. Numeric prefix fallback e.g. "4" or "04"
   const num = parseInt(trimmed);
-  if (!isNaN(num) && num >= 1 && num <= 21) return num - 1;
+  if (!isNaN(num) && num >= 1 && num <= 19) return num - 1;
 
   return -1; // unmatched — will log to console
 };
 
 // ── BUILD GRID ─────────────────────────────────────────────────────────────
+const makeStepBlock = (stepIdx, isSub) => {
+  const color = STEP_COLORS[stepIdx];
+  const name  = STEPS[stepIdx];
+  const num   = String(stepIdx + 1).padStart(2, '0');
+  const wrap  = document.createElement('div');
+  wrap.className = isSub ? 'step-sub' : 'step-card';
+  if (!isSub) {
+    wrap.id = `step-card-${stepIdx}`;
+    wrap.style.setProperty('--step-color', color);
+  }
+  wrap.style.setProperty('--step-color', color);
+  wrap.innerHTML = `
+    <div class="step-header">
+      <span class="step-num">${num}</span>
+      <span class="step-name">${name}</span>
+      <span class="step-count" id="count-${stepIdx}"></span>
+    </div>
+    <div class="step-projects" id="projects-${stepIdx}">
+      <div class="empty-state">—</div>
+    </div>`;
+  return wrap;
+};
+
 const buildGrid = () => {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
-  STEPS.forEach((name, i) => {
-    const color = STEP_COLORS[i];
-    const card = document.createElement('div');
-    card.className = 'step-card';
-    card.id = `step-${i}`;
-    card.style.setProperty('--step-color', color);
-    card.innerHTML = `
-      <div class="step-header">
-        <span class="step-num">${String(i+1).padStart(2,'0')}</span>
-        <span class="step-name">${name}</span>
-        <span class="step-count" id="count-${i}"></span>
-      </div>
-      <div class="step-projects" id="projects-${i}">
-        <div class="empty-state">—</div>
-      </div>`;
-    grid.appendChild(card);
+  DISPLAY_CELLS.forEach((cell, di) => {
+    if (cell.type === 'single') {
+      const card = makeStepBlock(cell.idx, false);
+      card.className = 'step-card';
+      grid.appendChild(card);
+    } else {
+      // Combined cell
+      const card = document.createElement('div');
+      card.className = 'step-card';
+      card.id = `combined-card-${di}`;
+      card.appendChild(makeStepBlock(cell.idxA, true));
+      const div = document.createElement('div');
+      div.className = 'step-divider';
+      card.appendChild(div);
+      card.appendChild(makeStepBlock(cell.idxB, true));
+      grid.appendChild(card);
+    }
   });
 };
 
@@ -544,27 +607,40 @@ const fetchAndRender = async () => {
       else if (value) unmatched.push({ name: p.name, phase: value });
     });
 
-    // Render each step card
+    // Render each step — update project lists and badges
     let matchedTotal = 0;
-    STEPS.forEach((_, i) => {
-      const col    = document.getElementById(`projects-${i}`);
-      const card   = document.getElementById(`step-${i}`);
-      const badge  = document.getElementById(`count-${i}`);
+
+    const renderStepIdx = (stepIdx) => {
+      const col   = document.getElementById(`projects-${stepIdx}`);
+      const badge = document.getElementById(`count-${stepIdx}`);
+      if (!col) return 0;
       col.innerHTML = '';
-      const count = buckets[i].length;
+      const count = buckets[stepIdx].length;
       matchedTotal += count;
       if (badge) badge.textContent = count > 0 ? count : '';
       if (count === 0) {
         col.innerHTML = '<div class="empty-state">—</div>';
-        card.classList.remove('has-projects');
       } else {
-        card.classList.add('has-projects');
-        buckets[i].forEach(name => {
+        buckets[stepIdx].forEach(name => {
           const pill = document.createElement('div');
           pill.className = 'project-pill';
           pill.textContent = name;
           col.appendChild(pill);
         });
+      }
+      return count;
+    };
+
+    DISPLAY_CELLS.forEach((cell, di) => {
+      if (cell.type === 'single') {
+        const count = renderStepIdx(cell.idx);
+        const card  = document.getElementById(`step-card-${cell.idx}`);
+        if (card) card.classList.toggle('has-projects', count > 0);
+      } else {
+        const countA = renderStepIdx(cell.idxA);
+        const countB = renderStepIdx(cell.idxB);
+        const card   = document.getElementById(`combined-card-${di}`);
+        if (card) card.classList.toggle('has-projects', countA + countB > 0);
       }
     });
 
@@ -640,19 +716,16 @@ const animateScroll = (el) => {
 };
 
 const initScrollers = () => {
-  // Cancel any existing animations
   scrollStates.forEach(state => cancelAnimationFrame(state.rafId));
   scrollStates.clear();
 
-  STEPS.forEach((_, i) => {
-    const el = document.getElementById(`projects-${i}`);
-    if (!el) return;
+  const containers = document.querySelectorAll('.step-projects');
+  containers.forEach((el, i) => {
     const overflows = el.scrollHeight > el.clientHeight + 4;
     if (overflows) {
       el.scrollTop = 0;
       const state = { direction: 'down', pausing: true, rafId: null };
       scrollStates.set(el, state);
-      // Stagger start so all columns don't scroll in sync
       setTimeout(() => {
         state.pausing = false;
         animateScroll(el);
