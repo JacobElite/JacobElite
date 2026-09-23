@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Design Project Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0a0c0f;
@@ -33,7 +33,6 @@
     align-items: center;
     justify-content: center;
     height: 100vh;
-    gap: 0;
     background: radial-gradient(ellipse at 50% 0%, #1a2a4a 0%, var(--bg) 70%);
   }
   #setup h1 {
@@ -132,40 +131,39 @@
     display: none;
     flex-direction: column;
     height: 100vh;
-    padding: 0;
   }
 
   .dash-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 28px;
+    padding: 16px 30px;
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
     background: var(--surface);
   }
   .dash-header h1 {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.7rem;
+    font-size: 1.9rem;
     letter-spacing: 0.12em;
     color: white;
   }
   .dash-meta {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 26px;
   }
   .live-dot {
     display: flex;
     align-items: center;
     gap: 7px;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--muted);
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
-  .dot {
-    width: 7px; height: 7px;
+  .dot-indicator {
+    width: 8px; height: 8px;
     border-radius: 50%;
     background: #4ade80;
     box-shadow: 0 0 8px #4ade80;
@@ -177,24 +175,24 @@
   }
   #last-updated {
     font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     color: var(--muted);
   }
   #project-count {
     font-family: 'DM Mono', monospace;
-    font-size: 0.8rem;
+    font-size: 0.88rem;
     color: var(--accent);
     background: rgba(79,156,249,0.1);
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: 20px;
   }
 
   /* ── GRID ── */
   .grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 1px;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 2px;
     flex: 1;
     overflow: hidden;
     background: var(--border);
@@ -205,102 +203,81 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    border-top: 4px solid var(--step-color, var(--border));
+    padding: 14px 16px 16px;
     transition: background 0.2s;
-    position: relative;
   }
   .step-card.has-projects {
     background: var(--surface2);
   }
 
   .step-header {
-    padding: 8px 10px 6px;
-    border-bottom: 2px solid var(--step-color, var(--border));
-    flex-shrink: 0;
     display: flex;
     align-items: baseline;
-    gap: 7px;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-bottom: 12px;
   }
   .step-num {
     font-family: 'DM Mono', monospace;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     color: var(--step-color, var(--muted));
-    opacity: 0.7;
+    opacity: 0.85;
     flex-shrink: 0;
   }
   .step-name {
-    font-size: 0.88rem;
-    font-weight: 500;
+    font-size: 1.02rem;
+    font-weight: 600;
     color: var(--text);
-    line-height: 1.3;
-    letter-spacing: 0.01em;
+    line-height: 1.25;
+    letter-spacing: 0.005em;
     text-transform: uppercase;
     flex: 1;
   }
 
-  .step-count {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--step-color, var(--muted));
-    background: rgba(255,255,255,0.07);
-    border-radius: 10px;
-    padding: 1px 7px;
-    flex-shrink: 0;
-    min-width: 20px;
-    text-align: center;
-    opacity: 0.9;
-  }
-
-  .step-projects {
+  .step-body {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
     overflow-y: auto;
-    padding: 5px 10px 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
     scrollbar-width: none;
-  }
-  .step-projects::-webkit-scrollbar { display: none; }
-
-  .project-pill {
-    background: rgba(255,255,255,0.04);
-    border-left: 2px solid var(--step-color, var(--muted));
-    padding: 5px 8px;
-    border-radius: 0 4px 4px 0;
-    font-size: 0.88rem;
-    font-family: 'DM Sans', sans-serif;
-    color: var(--text);
-    opacity: 0.9;
-    line-height: 1.3;
-    animation: fadeIn 0.3s ease;
-  }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 0.9; } }
-
-
-  /* ── COMBINED CELL ── */
-  .step-sub {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: hidden;
     min-height: 0;
   }
-  .step-divider {
-    height: 1px;
-    background: rgba(255,255,255,0.1);
+  .step-body::-webkit-scrollbar { display: none; }
+
+  .dot-cluster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    justify-content: center;
+    max-width: 100%;
+  }
+  .job-dot {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--step-color, var(--accent));
     flex-shrink: 0;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
+
+  .count-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.9rem;
+    font-weight: 500;
+    color: var(--step-color, var(--accent));
+    line-height: 1;
   }
 
   .empty-state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
+    font-size: 0.85rem;
     color: var(--muted);
-    font-size: 0.6rem;
-    opacity: 0.4;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    opacity: 0.5;
+    letter-spacing: 0.04em;
   }
 
   /* ── Refresh bar ── */
@@ -362,7 +339,7 @@
   <div class="dash-header">
     <h1>Design Project Tracker — 2026</h1>
     <div class="dash-meta">
-      <div class="live-dot"><span class="dot"></span> Live</div>
+      <div class="live-dot"><span class="dot-indicator"></span> Live</div>
       <span id="project-count">— active projects</span>
       <span id="last-updated">—</span>
     </div>
@@ -371,7 +348,7 @@
 </div>
 
 <div id="refresh-bar" style="display:none"></div>
-<div id="error-toast" id="error-toast"></div>
+<div id="error-toast"></div>
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────────────────
@@ -432,34 +409,10 @@ const STEP_COLORS = [
   '#7c6fea','#5b82e5','#38c4e0','#4ade80',
 ];
 
-// Display cell layout — 18 cells for the 6×3 grid.
-// Steps 6+7 (indices 5 & 6) share one combined cell.
-const DISPLAY_CELLS = [
-  {type:'single', idx:0},
-  {type:'single', idx:1},
-  {type:'single', idx:2},
-  {type:'single', idx:3},
-  {type:'single', idx:4},
-  {type:'combined', idxA:5, idxB:6},
-  {type:'single', idx:7},
-  {type:'single', idx:8},
-  {type:'single', idx:9},
-  {type:'single', idx:10},
-  {type:'single', idx:11},
-  {type:'single', idx:12},
-  {type:'single', idx:13},
-  {type:'single', idx:14},
-  {type:'single', idx:15},
-  {type:'single', idx:16},
-  {type:'single', idx:17},
-  {type:'single', idx:18},
-];
-
 // ── STATE ──────────────────────────────────────────────────────────────────
 let apiToken       = '';
 let portfolioGid   = '';
 let refreshTimer   = null;
-let countdownTimer = null;
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
 const api = async (path) => {
@@ -526,49 +479,24 @@ const matchStep = (phaseValue) => {
 };
 
 // ── BUILD GRID ─────────────────────────────────────────────────────────────
-const makeStepBlock = (stepIdx, isSub) => {
-  const color = STEP_COLORS[stepIdx];
-  const name  = STEPS[stepIdx];
-  const num   = String(stepIdx + 1).padStart(2, '0');
-  const wrap  = document.createElement('div');
-  wrap.className = isSub ? 'step-sub' : 'step-card';
-  if (!isSub) {
-    wrap.id = `step-card-${stepIdx}`;
-    wrap.style.setProperty('--step-color', color);
-  }
-  wrap.style.setProperty('--step-color', color);
-  wrap.innerHTML = `
-    <div class="step-header">
-      <span class="step-num">${num}</span>
-      <span class="step-name">${name}</span>
-      <span class="step-count" id="count-${stepIdx}"></span>
-    </div>
-    <div class="step-projects" id="projects-${stepIdx}">
-      <div class="empty-state">—</div>
-    </div>`;
-  return wrap;
-};
-
 const buildGrid = () => {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
-  DISPLAY_CELLS.forEach((cell, di) => {
-    if (cell.type === 'single') {
-      const card = makeStepBlock(cell.idx, false);
-      card.className = 'step-card';
-      grid.appendChild(card);
-    } else {
-      // Combined cell
-      const card = document.createElement('div');
-      card.className = 'step-card';
-      card.id = `combined-card-${di}`;
-      card.appendChild(makeStepBlock(cell.idxA, true));
-      const div = document.createElement('div');
-      div.className = 'step-divider';
-      card.appendChild(div);
-      card.appendChild(makeStepBlock(cell.idxB, true));
-      grid.appendChild(card);
-    }
+  STEPS.forEach((name, i) => {
+    const color = STEP_COLORS[i];
+    const card = document.createElement('div');
+    card.className = 'step-card';
+    card.id = `step-${i}`;
+    card.style.setProperty('--step-color', color);
+    card.innerHTML = `
+      <div class="step-header">
+        <span class="step-num">${String(i+1).padStart(2,'0')}</span>
+        <span class="step-name">${name}</span>
+      </div>
+      <div class="step-body" id="body-${i}">
+        <span class="empty-state">No jobs</span>
+      </div>`;
+    grid.appendChild(card);
   });
 };
 
@@ -607,40 +535,39 @@ const fetchAndRender = async () => {
       else if (value) unmatched.push({ name: p.name, phase: value });
     });
 
-    // Render each step — update project lists and badges
+    // Render each step card as a dot cluster + count
     let matchedTotal = 0;
-
-    const renderStepIdx = (stepIdx) => {
-      const col   = document.getElementById(`projects-${stepIdx}`);
-      const badge = document.getElementById(`count-${stepIdx}`);
-      if (!col) return 0;
-      col.innerHTML = '';
-      const count = buckets[stepIdx].length;
+    STEPS.forEach((_, i) => {
+      const body  = document.getElementById(`body-${i}`);
+      const card  = document.getElementById(`step-${i}`);
+      const color = STEP_COLORS[i];
+      const count = buckets[i].length;
       matchedTotal += count;
-      if (badge) badge.textContent = count > 0 ? count : '';
-      if (count === 0) {
-        col.innerHTML = '<div class="empty-state">—</div>';
-      } else {
-        buckets[stepIdx].forEach(name => {
-          const pill = document.createElement('div');
-          pill.className = 'project-pill';
-          pill.textContent = name;
-          col.appendChild(pill);
-        });
-      }
-      return count;
-    };
+      body.innerHTML = '';
 
-    DISPLAY_CELLS.forEach((cell, di) => {
-      if (cell.type === 'single') {
-        const count = renderStepIdx(cell.idx);
-        const card  = document.getElementById(`step-card-${cell.idx}`);
-        if (card) card.classList.toggle('has-projects', count > 0);
+      if (count === 0) {
+        card.classList.remove('has-projects');
+        const empty = document.createElement('span');
+        empty.className = 'empty-state';
+        empty.textContent = 'No jobs';
+        body.appendChild(empty);
       } else {
-        const countA = renderStepIdx(cell.idxA);
-        const countB = renderStepIdx(cell.idxB);
-        const card   = document.getElementById(`combined-card-${di}`);
-        if (card) card.classList.toggle('has-projects', countA + countB > 0);
+        card.classList.add('has-projects');
+
+        const cluster = document.createElement('div');
+        cluster.className = 'dot-cluster';
+        for (let d = 0; d < count; d++) {
+          const dot = document.createElement('div');
+          dot.className = 'job-dot';
+          dot.title = buckets[i][d]; // hover tooltip with address, for anyone using a mouse
+          cluster.appendChild(dot);
+        }
+        body.appendChild(cluster);
+
+        const num = document.createElement('div');
+        num.className = 'count-number';
+        num.textContent = count;
+        body.appendChild(num);
       }
     });
 
@@ -666,72 +593,6 @@ const startCountdown = () => {
   bar.style.animation = 'none';
   bar.offsetHeight; // reflow
   bar.style.animation = `shrink ${REFRESH_MS / 1000}s linear forwards`;
-};
-
-
-// ── AUTO-SCROLL overflowing step columns ──────────────────────────────────
-const scrollStates = new Map(); // col el -> { direction, pausing, rafId }
-
-const SCROLL_SPEED  = 0.4;   // px per animation frame (~24px/sec at 60fps)
-const PAUSE_MS      = 2000;  // ms to pause at top and bottom
-
-const animateScroll = (el) => {
-  const state = scrollStates.get(el);
-  if (!state) return;
-
-  const maxScroll = el.scrollHeight - el.clientHeight;
-
-  // Not overflowing — nothing to do
-  if (maxScroll <= 2) {
-    scrollStates.delete(el);
-    return;
-  }
-
-  if (state.pausing) {
-    state.rafId = requestAnimationFrame(() => animateScroll(el));
-    return;
-  }
-
-  if (state.direction === 'down') {
-    el.scrollTop = Math.min(el.scrollTop + SCROLL_SPEED, maxScroll);
-    if (el.scrollTop >= maxScroll - 1) {
-      state.pausing = true;
-      setTimeout(() => {
-        state.pausing = false;
-        state.direction = 'up';
-      }, PAUSE_MS);
-    }
-  } else {
-    el.scrollTop = Math.max(el.scrollTop - SCROLL_SPEED, 0);
-    if (el.scrollTop <= 1) {
-      state.pausing = true;
-      setTimeout(() => {
-        state.pausing = false;
-        state.direction = 'down';
-      }, PAUSE_MS);
-    }
-  }
-
-  state.rafId = requestAnimationFrame(() => animateScroll(el));
-};
-
-const initScrollers = () => {
-  scrollStates.forEach(state => cancelAnimationFrame(state.rafId));
-  scrollStates.clear();
-
-  const containers = document.querySelectorAll('.step-projects');
-  containers.forEach((el, i) => {
-    const overflows = el.scrollHeight > el.clientHeight + 4;
-    if (overflows) {
-      el.scrollTop = 0;
-      const state = { direction: 'down', pausing: true, rafId: null };
-      scrollStates.set(el, state);
-      setTimeout(() => {
-        state.pausing = false;
-        animateScroll(el);
-      }, PAUSE_MS + i * 300);
-    }
-  });
 };
 
 // ── CONNECT ────────────────────────────────────────────────────────────────
@@ -762,10 +623,8 @@ const connect = async () => {
     refreshTimer = setInterval(async () => {
       await fetchAndRender();
       startCountdown();
-      initScrollers();
     }, REFRESH_MS);
     startCountdown();
-    initScrollers();
 
   } catch (err) {
     document.getElementById('setup').style.display     = 'flex';
