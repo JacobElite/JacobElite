@@ -137,15 +137,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 24px;
+    padding: 16px 30px;
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
     background: var(--surface);
   }
   .dash-header h1 {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.3rem;
-    letter-spacing: 0.1em;
+    font-size: 1.9rem;
+    letter-spacing: 0.12em;
     color: white;
   }
   .dash-meta {
@@ -156,8 +156,8 @@
   .live-dot {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.72rem;
+    gap: 7px;
+    font-size: 0.8rem;
     color: var(--muted);
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -190,7 +190,7 @@
   /* ── GRID ── */
   .grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     grid-auto-rows: 1fr;
     gap: 2px;
     flex: 1;
@@ -203,8 +203,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border-top: 5px solid var(--step-color, var(--border));
-    padding: 18px 20px 22px;
+    border-top: 4px solid var(--step-color, var(--border));
+    padding: 14px 16px 16px;
     transition: background 0.2s;
   }
   .step-card.has-projects {
@@ -214,22 +214,22 @@
   .step-header {
     display: flex;
     align-items: baseline;
-    gap: 10px;
+    gap: 8px;
     flex-shrink: 0;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
   .step-num {
     font-family: 'DM Mono', monospace;
-    font-size: 1.3rem;
+    font-size: 0.95rem;
     color: var(--step-color, var(--muted));
-    opacity: 0.9;
+    opacity: 0.85;
     flex-shrink: 0;
   }
   .step-name {
-    font-size: 1.4rem;
-    font-weight: 700;
+    font-size: 1.02rem;
+    font-weight: 600;
     color: var(--text);
-    line-height: 1.2;
+    line-height: 1.25;
     letter-spacing: 0.005em;
     text-transform: uppercase;
     flex: 1;
@@ -241,7 +241,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: 12px;
     overflow-y: auto;
     scrollbar-width: none;
     min-height: 0;
@@ -251,13 +251,13 @@
   .dot-cluster {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 7px;
     justify-content: center;
     max-width: 100%;
   }
   .job-dot {
-    width: 24px;
-    height: 24px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     background: var(--step-color, var(--accent));
     flex-shrink: 0;
@@ -267,14 +267,14 @@
 
   .count-number {
     font-family: 'DM Mono', monospace;
-    font-size: 3rem;
-    font-weight: 700;
+    font-size: 1.9rem;
+    font-weight: 500;
     color: var(--step-color, var(--accent));
     line-height: 1;
   }
 
   .empty-state {
-    font-size: 1.1rem;
+    font-size: 0.85rem;
     color: var(--muted);
     opacity: 0.5;
     letter-spacing: 0.04em;
