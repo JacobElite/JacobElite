@@ -137,15 +137,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 30px;
+    padding: 8px 24px;
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
     background: var(--surface);
   }
   .dash-header h1 {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.9rem;
-    letter-spacing: 0.12em;
+    font-size: 1.3rem;
+    letter-spacing: 0.1em;
     color: white;
   }
   .dash-meta {
@@ -156,8 +156,8 @@
   .live-dot {
     display: flex;
     align-items: center;
-    gap: 7px;
-    font-size: 0.8rem;
+    gap: 6px;
+    font-size: 0.72rem;
     color: var(--muted);
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -190,7 +190,7 @@
   /* ── GRID ── */
   .grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     grid-auto-rows: 1fr;
     gap: 2px;
     flex: 1;
@@ -203,8 +203,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border-top: 4px solid var(--step-color, var(--border));
-    padding: 14px 16px 16px;
+    border-top: 5px solid var(--step-color, var(--border));
+    padding: 18px 20px 22px;
     transition: background 0.2s;
   }
   .step-card.has-projects {
@@ -214,22 +214,22 @@
   .step-header {
     display: flex;
     align-items: baseline;
-    gap: 8px;
+    gap: 10px;
     flex-shrink: 0;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
   }
   .step-num {
     font-family: 'DM Mono', monospace;
-    font-size: 0.95rem;
+    font-size: 1.3rem;
     color: var(--step-color, var(--muted));
-    opacity: 0.85;
+    opacity: 0.9;
     flex-shrink: 0;
   }
   .step-name {
-    font-size: 1.02rem;
-    font-weight: 600;
+    font-size: 1.4rem;
+    font-weight: 700;
     color: var(--text);
-    line-height: 1.25;
+    line-height: 1.2;
     letter-spacing: 0.005em;
     text-transform: uppercase;
     flex: 1;
@@ -241,7 +241,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 16px;
     overflow-y: auto;
     scrollbar-width: none;
     min-height: 0;
@@ -251,13 +251,13 @@
   .dot-cluster {
     display: flex;
     flex-wrap: wrap;
-    gap: 7px;
+    gap: 10px;
     justify-content: center;
     max-width: 100%;
   }
   .job-dot {
-    width: 15px;
-    height: 15px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: var(--step-color, var(--accent));
     flex-shrink: 0;
@@ -267,14 +267,14 @@
 
   .count-number {
     font-family: 'DM Mono', monospace;
-    font-size: 1.9rem;
-    font-weight: 500;
+    font-size: 3rem;
+    font-weight: 700;
     color: var(--step-color, var(--accent));
     line-height: 1;
   }
 
   .empty-state {
-    font-size: 0.85rem;
+    font-size: 1.1rem;
     color: var(--muted);
     opacity: 0.5;
     letter-spacing: 0.04em;
@@ -354,7 +354,18 @@
 // ── CONFIG ──────────────────────────────────────────────────────────────────
 const PORTFOLIO_GID   = '1213865621316992';
 const PHASE_FIELD     = 'PHASE_';
+const ASSIGNED_FIELD  = 'ASSIGNED__';
 const REFRESH_MS      = 120_000; // 2 minutes
+
+// Designer name -> dot color. Match is case-insensitive against the
+// Assigned__ multi-select values in Asana.
+const DESIGNER_COLORS = {
+  'STEPHANIE': '#f5a623', // orange
+  'TRINA':     '#f6e04f', // yellow
+  'DANIELLE':  '#ec4899', // pink
+  'JANE':      '#4ade80', // green
+};
+const UNASSIGNED_COLOR = '#6b7280'; // grey — no recognized designer on the job
 
 const STEPS = [
   'Home Consultation',
@@ -478,6 +489,18 @@ const matchStep = (phaseValue) => {
   return -1; // unmatched — will log to console
 };
 
+// Returns up to 2 hex colors representing the designers on a job.
+// 0 recognized designers -> [grey]. 1 -> [color]. 2+ -> first two recognized, split.
+const getDesignerColors = (designerNames) => {
+  const recognized = (designerNames || [])
+    .map(n => n?.trim().toUpperCase())
+    .filter(n => DESIGNER_COLORS[n]);
+
+  if (recognized.length === 0) return [UNASSIGNED_COLOR];
+  if (recognized.length === 1) return [DESIGNER_COLORS[recognized[0]]];
+  return [DESIGNER_COLORS[recognized[0]], DESIGNER_COLORS[recognized[1]]];
+};
+
 // ── BUILD GRID ─────────────────────────────────────────────────────────────
 const buildGrid = () => {
   const grid = document.getElementById('grid');
@@ -506,7 +529,7 @@ const fetchAndRender = async () => {
     // Paginate through portfolio items
     let allProjects = [];
     let offset = undefined;
-    const fields = 'name,custom_fields,custom_fields.name,custom_fields.display_value,custom_fields.enum_value,custom_fields.text_value,custom_fields.gid,archived';
+    const fields = 'name,custom_fields,custom_fields.name,custom_fields.display_value,custom_fields.enum_value,custom_fields.text_value,custom_fields.multi_enum_values,custom_fields.multi_enum_values.name,custom_fields.gid,archived';
     do {
       const url = `/portfolios/${portfolioGid}/items?opt_fields=${fields}&limit=100` + (offset ? `&offset=${offset}` : '');
       const resp = await fetch(`https://app.asana.com/api/1.0${url}`, {
@@ -531,7 +554,14 @@ const fetchAndRender = async () => {
       );
       const value = phaseField?.display_value || phaseField?.enum_value?.name || phaseField?.text_value || null;
       const idx = value ? matchStep(value) : -1;
-      if (idx >= 0) buckets[idx].push(p.name);
+
+      const assignedField = p.custom_fields?.find(cf =>
+        cf.name?.toUpperCase().replace(/\s/g,'_') === ASSIGNED_FIELD ||
+        cf.name?.toUpperCase() === ASSIGNED_FIELD
+      );
+      const designerNames = assignedField?.multi_enum_values?.map(v => v.name) || [];
+
+      if (idx >= 0) buckets[idx].push({ name: p.name, designers: designerNames });
       else if (value) unmatched.push({ name: p.name, phase: value });
     });
 
@@ -557,9 +587,17 @@ const fetchAndRender = async () => {
         const cluster = document.createElement('div');
         cluster.className = 'dot-cluster';
         for (let d = 0; d < count; d++) {
+          const job = buckets[i][d];
           const dot = document.createElement('div');
           dot.className = 'job-dot';
-          dot.title = buckets[i][d]; // hover tooltip with address, for anyone using a mouse
+          dot.title = job.name; // hover tooltip with address, for anyone using a mouse
+
+          const colors = getDesignerColors(job.designers);
+          if (colors.length === 1) {
+            dot.style.background = colors[0];
+          } else {
+            dot.style.background = `linear-gradient(90deg, ${colors[0]} 50%, ${colors[1]} 50%)`;
+          }
           cluster.appendChild(dot);
         }
         body.appendChild(cluster);
